@@ -12,6 +12,7 @@ If you wish to run DarkNet on your computer, here are some useful links and comm
 
 - [OpenCV](https://www.youtube.com/watch?v=YsmhKar8oOc)
 - [DarkNet](https://www.youtube.com/watch?v=FE2GBeKuqpc)
+- Navigate to `C:\darknet\darknet-master\build\darknet\x64` on Anaconda Prompt
 
 ### Image:
 - `darknet.exe detector test data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights`
