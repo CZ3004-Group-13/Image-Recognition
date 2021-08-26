@@ -22,7 +22,7 @@ If you wish to run DarkNet on your computer, here are some useful links and comm
 
 ### Video:
 - `darknet.exe detector demo data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_video.mp4`
-- `darknet.exe detector demo data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_video.mp4 -out-filename test/output.mp4`
+- `darknet.exe detector demo data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_video.mp4 -out_filename test/output.mp4`
 
 ### Webcam:
 - `darknet.exe detector demo data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights`
