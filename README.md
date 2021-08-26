@@ -15,10 +15,10 @@ If you wish to run DarkNet on your computer, here are some useful links and comm
 
 ### Image:
 - `darknet.exe detector test data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights`
-- `darknet.exe detector test data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_image_1.jpg -out-filename test/predictions_1.jpg`
-- `darknet.exe detector test data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_image_2.jpg -out-filename test/predictions_2.jpg`
-- `darknet.exe detector test data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_image_3.jpg -out-filename test/predictions_3.jpg`
-- `darknet.exe detector test data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_image_4.jpg -out-filename test/predictions_4.jpg`
+- `darknet.exe detector test data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_image_1.jpg`
+- `darknet.exe detector test data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_image_2.jpg`
+- `darknet.exe detector test data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_image_3.jpg`
+- `darknet.exe detector test data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_image_4.jpg`
 
 ### Video:
 - `darknet.exe detector demo data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_last.weights examples/test_video.mp4`
