@@ -1,16 +1,31 @@
+import os
 import random
-lst = [[x for x in range(30)] for y in range(30)]
+
+lst = []
+prev = "0"
+for subdir, dirs, files in os.walk(".\\ts"):
+    tempList = []
+    for file in files:
+        if (file.endswith('.jpg')):
+            if (file.startswith('image' + prev + '-')):
+                tempList.append('data/ts/' + file)
+            else:
+                lst.append(tempList)
+                prev = file.split('e')[1].split('-')[0]
+                print(prev)
+                tempList = ['data/ts/' + file]
+               
 for i in lst:
     random.shuffle(i)
     
 f = open("test.txt", "w")
 for i in range(len(lst)):
     for j in range(5):
-        f.write('data/ts/image' + str(i) + '-' + str(lst[i][j]).zfill(2) + '.jpg\n')
+        f.write(lst[i][j] + '\n')
 f.close()
 
 f = open("train.txt", "w")
 for i in range(len(lst)):
-    for j in range(5, 30):
-        f.write('data/ts/image' + str(i) + '-' + str(lst[i][j]).zfill(2) + '.jpg\n')
+    for j in range(5, len(lst[i])):
+        f.write(lst[i][j] + '\n')
 f.close()
