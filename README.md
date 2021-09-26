@@ -5,7 +5,7 @@ This repository contains several sections.
 `Image_Recognition.ipynb` contains code to run darknet on Google Colab.
 
 ## Helpful Files
-`Photo_Taking_Helper.py` & `Train_Test_Split.py` are helpful files to help prepare data.
+`Photo_Taking_Helper.py`, `File_Renamer.py` & `Train_Test_Split.py` are helpful files to help prepare data.
 
 ## DarkNet on Computer
 If you wish to run DarkNet on your computer, here are some useful links and commmands:
