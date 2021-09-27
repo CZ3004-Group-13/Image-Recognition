@@ -68,7 +68,7 @@ def leading_zero(int_string):
         return int_string
 
 def test_detect():
-    frame = cv2.imread('C:\\Users\\CZ3004\\Downloads\\images\\multi_142.jpeg')
+    frame = cv2.imread('C:\\darknet\\darknet-master\\build\\darknet\\x64\\examples\\test_image_1.jpg')
     #frame = retrieve_img()
     network, class_names, class_colors = darknet.load_network(
         CONFIG_FILE_PATH,
@@ -154,7 +154,7 @@ def continuous_detect():
         # Android: NumberIDABXXYY
         # ANDROID STRING
         android_string ='NumberID'
-        android_id = leading_zero(i)
+        android_id = i
         android_x = leading_zero(str(x_coordinate))
         android_y = leading_zero(str(y_coordinate))
         android_string += android_id + android_x + android_y
