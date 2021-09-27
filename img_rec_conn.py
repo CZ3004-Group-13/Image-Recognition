@@ -91,6 +91,7 @@ def show_all_images(frame_list):
         
     imgStack = stackImages(2, frame_list)
     cv2.imshow("Images", imgStack)
+    cv2.imwrite("test/detected.jpg", imgStack)
 
     if cv2.waitKey() & 0xFF == ord('q'):
         cv2.destroyAllWindows()
