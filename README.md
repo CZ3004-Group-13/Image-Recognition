@@ -33,7 +33,7 @@ How to use:
 - Go to http://192.168.13.13/html/cam_pic_new.php to access the server's video
 - To stop the camera software, use: ./stop.sh
 - To update an existing installation, use: ./update.sh
-- 
+
 ## Darknet using RPi-Cam-Web-Interface
 - In command prompt, cd C:\darknet\darknet-master\build\darknet\x64
 - Run following command: darknet.exe detector demo data/yolov4.data cfg/yolov4_custom_test.cfg backup/yolov4_custom_train_final.weights http://192.168.13.13/html/cam_pic_new.php
