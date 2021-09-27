@@ -4,6 +4,7 @@ import numpy as np
 import imutils
 import random
 import time
+import os
 
 #Setup sending of string and receiving of coordinate
 import socket
@@ -98,18 +99,12 @@ def show_all_images(frame_list):
     #    frame = imutils.resize(frame, width=400)
     #    cv2.imshow('Image' + str(index), frame)
         
-    imgStack = stackImages(2, split(frame_list, 2))
+    imgStack = stackImages(2, frame_list)
     cv2.imshow("Images", imgStack)
     cv2.imwrite("test/detected.jpg", imgStack)
 
     if cv2.waitKey() & 0xFF == ord('q'):
         cv2.destroyAllWindows()
-
-def leading_zero(int_string):
-    if int(int_string) < 10:
-        return '0' + int_string
-    else:
-        return int_string
 
 def test_detect():
     frame = cv2.imread('C:\\darknet\\darknet-master\\build\\darknet\\x64\\examples\\test_image_1.jpg')
@@ -164,62 +159,56 @@ def continuous_detect():
                 id = i[0] #string
                 confidence = i[1] #string
                 bbox = i[2] #tuple
-                print('ID detected: ' + id, ', confidence: ' + confidence)
+                x_coordinate = int(bbox[0])
+                y_coordinate = int(bbox[1])
+                width = int(bbox[2])
+                height = int(bbox[3])
+                print('ID detected: ' + id, ', confidence: ' + confidence + ', bbox:' + '[(' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ', ' + str(height) + ']')
                 if id in results:
-                    print('ID has been detected before')
+                    # print('ID has been detected before') # USEFUL 
                     if float(confidence) > float(results[id][1]):
-                        print('Confidence higher. Replacing existing image.')
+                        # print('Confidence higher. Replacing existing image.') # USEFUL 
                         del results[id] #remove existing result from dict
                         del images[id] #remove existing img from dict
                         results[id] = i #add new result to dict. DUPLICATE ID IN VALUE PAIR!
                         images[id] = image #add new result to dict
                     else:
-                        print('Confidence lower. Keeping existing image.')
+                        # print('Confidence lower. Keeping existing image.') # USEFUL
                         pass
                 else:
-                    print('New ID. Saving to results and image dict.')
+                    # print('New ID. Saving to results and image dict.') # USEFUL
                     results[id] = i
                     images[id] = image
     except KeyboardInterrupt:
         print('End of image recognition.')
     
     #generate string
-    img_rec_result_string = '{'
+    # img_rec_result_string = '{'
+    img_rec_result_string = ''
     print("Detection results:")
     
     for i in results:
-        #here you would pull actual coordinates and compute
-        #coordinates should already been loaded and accessible through a variable
-        x_coordinate = random.randint(0,14)
-        y_coordinate = random.randint(0,19)
-        id_coordinate_str = '(' + i + ',' + str(x_coordinate) + ',' + str(y_coordinate) + '),'
+        x_coordinate = int(results[i][2][0])
+        y_coordinate = int(results[i][2][1])
+        width = int(results[i][2][2])
+        height = int(results[i][2][3])
+        id_coordinate_str = '[' + i + ', (' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ', ' + str(height) + ']' + os.linesep
         img_rec_result_string += id_coordinate_str
-
-        # Android: NumberIDABXXYY
-        # ANDROID STRING
-        android_string ='NumberID'
-        android_id = i
-        android_x = leading_zero(str(x_coordinate))
-        android_y = leading_zero(str(y_coordinate))
-        android_string += android_id + android_x + android_y
         
-        # send string to android
-        message = android_string.encode(FORMAT)
-        ir_socket.send(message)
-        print('Sent ' + android_string + ' to Android.')
+        # send string to rpi
+        # message = img_rec_result_string.encode(FORMAT)
+        # ir_socket.send(message)
         time.sleep(0.1)
-        #finish send string to android
+        #finish send string to rpi
 
-        print('ID: ' + i + ', Coordinates: (' + str(x_coordinate) +',' + str(y_coordinate) + ')' + ', Confidence: ' + results[i][1])
+        print('ID: ' + i + ', Coordinates: (' + str(x_coordinate) +',' + str(y_coordinate) + ')' + ', Confidence: ' + results[i][1] + ', bbox:', results[i][2])
 
-    if img_rec_result_string[-1] == ',':
-        img_rec_result_string = img_rec_result_string[:-1]
-    img_rec_result_string += '}'
+    #if img_rec_result_string[-1] == ',':
+    #    img_rec_result_string = img_rec_result_string[:-1]
+    # img_rec_result_string += '}'
     print(img_rec_result_string)
-    android_string_all = 'ImageID' + img_rec_result_string
-    message = android_string_all.encode(FORMAT)
+    message = img_rec_result_string.encode(FORMAT)
     ir_socket.send(message)
-    print('Sent ' + android_string_all + ' to Android.')
 
     #generate image mosaic
     result_frame_list = list(images.values())
