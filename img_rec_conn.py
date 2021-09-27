@@ -21,11 +21,20 @@ ir_socket.connect(ADDR)
 
 WEIGHT_FILE_PATH = './backup/yolov4_custom_train_final.weights'
 CONFIG_FILE_PATH = './cfg/yolov4_custom_test.cfg'
-DATA_FILE_PATH = './cfg/coco.data'
+DATA_FILE_PATH = './data/yolov4.data'
 RPI_IP = '192.168.13.13'
 MJPEG_STREAM_URL = 'http://' + RPI_IP + '/html/cam_pic_new.php'
 YOLO_BATCH_SIZE = 4
 THRESH = 0.85 #may want to lower and do filtering for specific images later
+
+def split(arr, size):
+     arrs = []
+     while len(arr) > size:
+         pice = arr[:size]
+         arrs.append(pice)
+         arr   = arr[size:]
+     arrs.append(arr)
+     return arrs
 
 def stackImages(scale,imgArray):
     rows = len(imgArray)
@@ -89,7 +98,7 @@ def show_all_images(frame_list):
     #    frame = imutils.resize(frame, width=400)
     #    cv2.imshow('Image' + str(index), frame)
         
-    imgStack = stackImages(2, frame_list)
+    imgStack = stackImages(2, split(frame_list, 2))
     cv2.imshow("Images", imgStack)
     cv2.imwrite("test/detected.jpg", imgStack)
 
