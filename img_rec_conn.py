@@ -200,6 +200,47 @@ def continuous_detect():
         # ir_socket.send(message)
         time.sleep(0.1)
         #finish send string to rpi
+        
+        distance = 0
+        if height > 190:
+            distance = 15
+        elif height > 170:
+            distance = 20
+        elif height > 150:
+            distance = 25
+        elif height > 133:
+            distance = 30
+        elif height > 117:
+            distance = 35
+        elif height > 95:
+            distance = 40
+        elif height > 85:
+            distance = 45
+        elif height > 78:
+            distance = 50
+        elif height > 72:
+            distance = 55
+        elif height > 64:
+            distance = 60
+        elif height > 61:
+            distance = 65
+        elif height > 58:
+            distance = 70
+        else:
+            distance = 75
+        # 52 is height of 80cm
+            
+        direction = 0 # 1 LEFT, 2 CENTRE, 3 RIGHT
+        if x_coordinate < 83:
+            direction = 1
+        elif x_coordinate < 166:
+            direction = 2
+        else:
+            direction = 3
+        # 250 is maximum
+        
+        slant = (width / height < 0.4)
+        # if not slant, width / height is approx 0.5
 
         print('ID: ' + i + ', Coordinates: (' + str(x_coordinate) +',' + str(y_coordinate) + ')' + ', Confidence: ' + results[i][1] + ', bbox:', results[i][2])
 
