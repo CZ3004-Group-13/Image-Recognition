@@ -20,16 +20,17 @@ Windows Python 2.7 version: https://github.com/AlexeyAB/darknet/blob/fc496d52bf2
 @author: Philip Kahn
 @date: 20180503
 """
-from ctypes import *
-import math
-import random
 import os
+import random
+from ctypes import *
 
 os.add_dll_directory('c:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.4/bin')
 os.add_dll_directory(os.path.dirname(__file__))
 
 print("Run: darknet_images.py or:\n")
-print("python.exe darknet_video.py --data_file cfg/coco.data --config_file cfg/yolov4.cfg --weights yolov4.weights --input test.mp4 \n")
+print(
+    "python.exe darknet_video.py --data_file cfg/coco.data --config_file cfg/yolov4.cfg --weights yolov4.weights --input test.mp4 \n")
+
 
 class BOX(Structure):
     _fields_ = [("x", c_float),
@@ -51,6 +52,7 @@ class DETECTION(Structure):
                 ("embedding_size", c_int),
                 ("sim", c_float),
                 ("track_id", c_int)]
+
 
 class DETNUMPAIR(Structure):
     _fields_ = [("num", c_int),
@@ -127,7 +129,9 @@ def print_detections(detections, coordinates=False):
     for label, confidence, bbox in detections:
         x, y, w, h = bbox
         if coordinates:
-            print("{}: {}%    (left_x: {:.0f}   top_y:  {:.0f}   width:   {:.0f}   height:  {:.0f})".format(label, confidence, x, y, w, h))
+            print("{}: {}%    (left_x: {:.0f}   top_y:  {:.0f}   width:   {:.0f}   height:  {:.0f})".format(label,
+                                                                                                            confidence,
+                                                                                                            x, y, w, h))
         else:
             print("{}: {}%".format(label, confidence))
 
@@ -222,7 +226,8 @@ if os.name == "nt":
         else:
             # Try the other way, in case no_gpu was compile but not renamed
             lib = CDLL(winGPUdll, RTLD_GLOBAL)
-            print("Environment variables indicated a CPU run, but we didn't find {}. Trying a GPU run anyway.".format(winNoGPUdll))
+            print("Environment variables indicated a CPU run, but we didn't find {}. Trying a GPU run anyway.".format(
+                winNoGPUdll))
 else:
     lib = CDLL("./libdarknet.so", RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
@@ -231,7 +236,7 @@ lib.network_height.argtypes = [c_void_p]
 lib.network_height.restype = c_int
 
 copy_image_from_bytes = lib.copy_image_from_bytes
-copy_image_from_bytes.argtypes = [IMAGE,c_char_p]
+copy_image_from_bytes.argtypes = [IMAGE, c_char_p]
 
 predict = lib.network_predict_ptr
 predict.argtypes = [c_void_p, POINTER(c_float)]
@@ -312,5 +317,5 @@ predict_image_letterbox.restype = POINTER(c_float)
 
 network_predict_batch = lib.network_predict_batch
 network_predict_batch.argtypes = [c_void_p, IMAGE, c_int, c_int, c_int,
-                                   c_float, c_float, POINTER(c_int), c_int, c_int]
+                                  c_float, c_float, POINTER(c_int), c_int, c_int]
 network_predict_batch.restype = POINTER(DETNUMPAIR)

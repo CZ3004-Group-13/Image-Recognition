@@ -37,35 +37,37 @@ def split(arr, size):
     return arrs
 
 
-def stackImages(scale, imgArray):
-    rows = len(imgArray)
-    cols = len(imgArray[0])
-    rowsAvailable = isinstance(imgArray[0], list)
-    width = imgArray[0][0].shape[1]
-    height = imgArray[0][0].shape[0]
-    if rowsAvailable:
+def stack_images(scale, img_array):
+    rows = len(img_array)
+    cols = len(img_array[0])
+    rows_available = isinstance(img_array[0], list)
+    width = img_array[0][0].shape[1]
+    height = img_array[0][0].shape[0]
+    if rows_available:
         for x in range(0, rows):
             for y in range(0, cols):
-                if imgArray[x][y].shape[:2] == imgArray[0][0].shape[:2]:
-                    imgArray[x][y] = cv2.resize(imgArray[x][y], (0, 0), None, scale, scale)
+                if img_array[x][y].shape[:2] == img_array[0][0].shape[:2]:
+                    img_array[x][y] = cv2.resize(img_array[x][y], (0, 0), None, scale, scale)
                 else:
-                    imgArray[x][y] = cv2.resize(imgArray[x][y], (imgArray[0][0].shape[1], imgArray[0][0].shape[0]),
-                                                None, scale, scale)
-                if len(imgArray[x][y].shape) == 2: imgArray[x][y] = cv2.cvtColor(imgArray[x][y], cv2.COLOR_GRAY2BGR)
-        imageBlank = np.zeros((height, width, 3), np.uint8)
-        hor = [imageBlank] * rows
-        hor_con = [imageBlank] * rows
+                    img_array[x][y] = cv2.resize(img_array[x][y], (img_array[0][0].shape[1], img_array[0][0].shape[0]),
+                                                 None, scale, scale)
+                if len(img_array[x][y].shape) == 2:
+                    img_array[x][y] = cv2.cvtColor(img_array[x][y], cv2.COLOR_GRAY2BGR)
+        image_blank = np.zeros((height, width, 3), np.uint8)
+        hor = [image_blank] * rows
         for x in range(0, rows):
-            hor[x] = np.hstack(imgArray[x])
+            hor[x] = np.hstack(img_array[x])
         ver = np.vstack(hor)
     else:
         for x in range(0, rows):
-            if imgArray[x].shape[:2] == imgArray[0].shape[:2]:
-                imgArray[x] = cv2.resize(imgArray[x], (0, 0), None, scale, scale)
+            if img_array[x].shape[:2] == img_array[0].shape[:2]:
+                img_array[x] = cv2.resize(img_array[x], (0, 0), None, scale, scale)
             else:
-                imgArray[x] = cv2.resize(imgArray[x], (imgArray[0].shape[1], imgArray[0].shape[0]), None, scale, scale)
-            if len(imgArray[x].shape) == 2: imgArray[x] = cv2.cvtColor(imgArray[x], cv2.COLOR_GRAY2BGR)
-        hor = np.hstack(imgArray)
+                img_array[x] = cv2.resize(img_array[x], (img_array[0].shape[1], img_array[0].shape[0]), None, scale,
+                                          scale)
+            if len(img_array[x].shape) == 2:
+                img_array[x] = cv2.cvtColor(img_array[x], cv2.COLOR_GRAY2BGR)
+        hor = np.hstack(img_array)
         ver = hor
     return ver
 
@@ -103,9 +105,9 @@ def show_all_images(frame_list):
     #    frame = imutils.resize(frame, width=400)
     #    cv2.imshow('Image' + str(index), frame)
 
-    imgStack = stackImages(2, frame_list)
-    cv2.imshow("Images", imgStack)
-    cv2.imwrite("test/detected.jpg", imgStack)
+    img_stack = stack_images(2, frame_list)
+    cv2.imshow("Images", img_stack)
+    cv2.imwrite("test/detected.jpg", img_stack)
 
     if cv2.waitKey() & 0xFF == ord('q'):
         cv2.destroyAllWindows()
@@ -154,39 +156,39 @@ def continuous_detect():
         while True:
             # print('Robot coordinates: ' + local_robot_coord)
             cv2.waitKey(50)
+            # read_rpi()
             frame = retrieve_img()
             image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
 
-            # structure: in a list, (id, confidence, (bbox))
-            # [('9', '99.72', (377.555419921875, 147.49517822265625, 87.70740509033203, 173.86444091796875)), ('7', '99.95', (43.562461853027344, 134.47283935546875, 91.14225006103516, 181.6890411376953)), ('8', '99.96', (214.2314453125, 143.147216796875, 85.68460845947266, 166.68231201171875))]
+            # structure: in a list, (id, confidence, [(bbox)])
             # index: 0-id 1-confidence 2-bbox
             # bbox: x,y,w,h
             for i in detections:
-                id = i[0]  # string
+                image_id = i[0]  # string
                 confidence = i[1]  # string
                 bbox = i[2]  # tuple
                 x_coordinate = int(bbox[0])
                 y_coordinate = int(bbox[1])
                 width = int(bbox[2])
                 height = int(bbox[3])
-                print('ID detected: ' + id,
+                print('ID detected: ' + image_id,
                       ', confidence: ' + confidence + ', bbox:' + '[(' + str(x_coordinate) + ', ' + str(
                           y_coordinate) + '), ' + str(width) + ', ' + str(height) + ']')
-                if id in results:
+                if image_id in results:
                     # print('ID has been detected before') # USEFUL 
-                    if float(confidence) > float(results[id][1]):
+                    if float(confidence) > float(results[image_id][1]):
                         # print('Confidence higher. Replacing existing image.') # USEFUL 
-                        del results[id]  # remove existing result from dict
-                        del images[id]  # remove existing img from dict
-                        results[id] = i  # add new result to dict. DUPLICATE ID IN VALUE PAIR!
-                        images[id] = image  # add new result to dict
+                        del results[image_id]  # remove existing result from dict
+                        del images[image_id]  # remove existing img from dict
+                        results[image_id] = i  # add new result to dict. DUPLICATE ID IN VALUE PAIR!
+                        images[image_id] = image  # add new result to dict
                     else:
                         # print('Confidence lower. Keeping existing image.') # USEFUL
                         pass
                 else:
                     # print('New ID. Saving to results and image dict.') # USEFUL
-                    results[id] = i
-                    images[id] = image
+                    results[image_id] = i
+                    images[image_id] = image
     except KeyboardInterrupt:
         print('End of image recognition.')
 
@@ -210,7 +212,6 @@ def continuous_detect():
         time.sleep(0.1)
         # finish send string to rpi
 
-        distance = 0
         if height > 190:
             distance = 15
         elif height > 170:
@@ -239,7 +240,7 @@ def continuous_detect():
             distance = 75
         # 52 is height of 80cm
 
-        direction = 0  # 1 LEFT, 2 CENTRE, 3 RIGHT
+        # 1 LEFT, 2 CENTRE, 3 RIGHT
         if x_coordinate < 83:
             direction = 1
         elif x_coordinate < 166:
@@ -253,6 +254,7 @@ def continuous_detect():
 
         print('ID: ' + i + ', Coordinates: (' + str(x_coordinate) + ',' + str(y_coordinate) + ')' + ', Confidence: ' +
               results[i][1] + ', bbox:', results[i][2])
+        print('Distance:', distance, 'Direction:', direction)
 
     # if img_rec_result_string[-1] == ',':
     #    img_rec_result_string = img_rec_result_string[:-1]
@@ -266,12 +268,12 @@ def continuous_detect():
     show_all_images(result_frame_list)
 
 
-def readRPI():
+def read_rpi():
     while True:
         msg = ir_socket.recv(1024)
         if msg:
-            print('Received coordinates')
-            robot_coord = msg
+            print('Received Message from RPi!')
+            return msg
 
 
 if __name__ == "__main__":
