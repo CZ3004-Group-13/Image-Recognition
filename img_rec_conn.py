@@ -279,7 +279,7 @@ def read_rpi():
 
 if __name__ == "__main__":
     # test_detect()
-    # read_rpi_thread = threading.Thread(target = readRPI, name = "read_rpi_thread")
+    # read_rpi_thread = threading.Thread(target = read_rpi, name = "read_rpi_thread")
     # read_rpi_thread.daemon = True
     # print('Starting RPi comm thread...')
     # read_rpi_thread.start()
