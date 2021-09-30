@@ -1,5 +1,6 @@
 import os
 # Setup sending of string and receiving of coordinate
+import threading
 import socket
 import time
 
@@ -156,8 +157,7 @@ def continuous_detect():
         while True:
             # print('Robot coordinates: ' + local_robot_coord)
             cv2.waitKey(50)
-            # UNCOMMENT TO WAIT FOR MESSAGE FROM RPI
-            # read_rpi()
+            
             frame = retrieve_img()
             image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
 
