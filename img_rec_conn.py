@@ -30,6 +30,7 @@ THRESH = 0.85  # may want to lower and do filter for specific images later
 # change this directory accordingly
 os.chdir("C:\\darknet\\darknet-master\\build\\darknet\\x64")
 
+
 def split(arr, size):
     arrs = []
     while len(arr) > size:
@@ -159,7 +160,12 @@ def continuous_detect():
         while True:
             # print('Robot coordinates: ' + local_robot_coord)
             cv2.waitKey(50)
-            
+
+            #msg = ir_socket.recv(1024).decode()
+            print(read())
+
+            #time.sleep(0.5)
+
             frame = retrieve_img()
             image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
 
@@ -279,9 +285,17 @@ def read_rpi():
             return msg
 
 
+def read():
+    try:
+        msg = ir_socket.recv(1024).decode()
+        return msg
+    except socket.error as e:
+        print("exception: ", e)
+
+
 if __name__ == "__main__":
     # test_detect()
-    # read_rpi_thread = threading.Thread(target = read_rpi, name = "read_rpi_thread")
+    # read_rpi_thread = threading.Thread(target=read_rpi, name="read_rpi_thread")
     # read_rpi_thread.daemon = True
     # print('Starting RPi comm thread...')
     # read_rpi_thread.start()
