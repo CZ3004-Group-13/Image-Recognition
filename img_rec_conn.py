@@ -27,6 +27,8 @@ MJPEG_STREAM_URL = 'http://' + RPI_IP + '/html/cam_pic_new.php'
 YOLO_BATCH_SIZE = 4
 THRESH = 0.85  # may want to lower and do filter for specific images later
 
+# change this directory accordingly
+os.chdir("C:\\darknet\\darknet-master\\build\\darknet\\x64")
 
 def split(arr, size):
     arrs = []
