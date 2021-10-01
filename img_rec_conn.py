@@ -161,10 +161,18 @@ def continuous_detect():
             # print('Robot coordinates: ' + local_robot_coord)
             cv2.waitKey(50)
 
-            #msg = ir_socket.recv(1024).decode()
-            print(read())
+            # msg = ir_socket.recv(1024).decode()
+            msg = read()
 
-            #time.sleep(0.5)
+            print(msg)
+            if msg == "t":  # take photo command
+                pass
+            elif msg == "s":  # stop img rec
+                break
+            else:
+                continue  # other garbage
+
+            # time.sleep(0.5)
 
             frame = retrieve_img()
             image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
@@ -180,9 +188,12 @@ def continuous_detect():
                 y_coordinate = int(bbox[1])
                 width = int(bbox[2])
                 height = int(bbox[3])
-                print('ID detected: ' + image_id,
-                      ', confidence: ' + confidence + ', bbox:' + '[(' + str(x_coordinate) + ', ' + str(
-                          y_coordinate) + '), ' + str(width) + ', ' + str(height) + ']')
+                img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' + '[(' + str(
+                    x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ', ' + str(height) + ']'
+
+                message = img_rec_string.encode(FORMAT)
+                ir_socket.send(message)
+
                 if image_id in results:
                     # print('ID has been detected before') # USEFUL 
                     if float(confidence) > float(results[image_id][1]):
