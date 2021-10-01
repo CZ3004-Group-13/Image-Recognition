@@ -1,6 +1,6 @@
 import os
 # Setup sending of string and receiving of coordinate
-import threading
+# import threading
 import socket
 import time
 
@@ -9,7 +9,7 @@ import numpy as np
 
 import darknet
 
-PORT = 3053
+PORT = 3055
 FORMAT = 'utf-8'
 SERVER = '192.168.13.13'
 ADDR = (SERVER, PORT)
