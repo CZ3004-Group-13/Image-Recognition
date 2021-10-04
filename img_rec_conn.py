@@ -165,7 +165,7 @@ def continuous_detect():
             msg = read()
 
             print(msg)
-            if msg == "t":  # take photo command
+            if msg == "R0.00":  # take photo command
                 pass
             elif msg == "s":  # stop img rec
                 break
