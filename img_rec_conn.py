@@ -279,6 +279,10 @@ def continuous_detect():
                     results[curr_index] = i
                     images[curr_index] = image
 
+            if curr_index not in images:
+                ir_socket.send(img_rec_string.encode(FORMAT))
+                continue
+
             # draw text of image
             images[curr_index] = cv2.putText(images[curr_index], results[curr_index][0] + ":" + str(mapping[results[curr_index][0]]), (30, 30), cv2.FONT_HERSHEY_TRIPLEX, 1.0, (255, 255, 255), 2)
 
