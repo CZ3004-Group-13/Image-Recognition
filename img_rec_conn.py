@@ -260,11 +260,11 @@ def continuous_detect():
                     # 52 is height of 80cm
 
                 if x_coordinate < 83:
-                    direction = "LEFT"
+                    position = "LEFT"
                 elif x_coordinate < 166:
-                    direction = "CENTRE"
+                    position = "CENTRE"
                 else:
-                    direction = "RIGHT"
+                    position = "RIGHT"
                     # 250 is maximum
 
                 slant = (width / height < 0.4)
@@ -274,7 +274,7 @@ def continuous_detect():
                 if height > curr_height and image_id != "bullseye":
                     # img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' + '[(' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ', ' + str(height) + ']'
 
-                    img_rec_string = "TARGET|" + obstacle_id + "|" + str(mapping[image_id])
+                    img_rec_string = "TARGET|" + obstacle_id + "|" + str(mapping[image_id]) + "|" + str(distance) + "|" + position
 
                     results[obstacle_id] = i
                     images[obstacle_id] = image
@@ -294,64 +294,16 @@ def continuous_detect():
     except KeyboardInterrupt:
         print('End of image recognition.')
 
-    print("Detection results:")
-
-    for i in results:
-        x_coordinate = int(results[i][2][0])
-        y_coordinate = int(results[i][2][1])
-        width = int(results[i][2][2])
-        height = int(results[i][2][3])
-
-        # send string to rpi
-        # message = img_rec_result_string.encode(FORMAT)
-        # ir_socket.send(message)
-        time.sleep(0.1)
-        # finish send string to rpi
-
-        if height > 190:
-            distance = 15
-        elif height > 170:
-            distance = 20
-        elif height > 150:
-            distance = 25
-        elif height > 133:
-            distance = 30
-        elif height > 117:
-            distance = 35
-        elif height > 95:
-            distance = 40
-        elif height > 85:
-            distance = 45
-        elif height > 78:
-            distance = 50
-        elif height > 72:
-            distance = 55
-        elif height > 64:
-            distance = 60
-        elif height > 61:
-            distance = 65
-        elif height > 58:
-            distance = 70
-        else:
-            distance = 75
-        # 52 is height of 80cm
-
-        # 1 LEFT, 2 CENTRE, 3 RIGHT
-        if x_coordinate < 83:
-            direction = 1
-        elif x_coordinate < 166:
-            direction = 2
-        else:
-            direction = 3
-        # 250 is maximum
-
-        slant = (width / height < 0.4)
-        # if not slant, width / height is approx 0.5
-
-        print('Image: ' + results[i][0] + ' (ID:' + str(mapping[results[i][0]]) + '), Coordinates: (' + str(x_coordinate) + ',' + str(
-            y_coordinate) + ')' + ', Confidence: ' +
-              results[i][1] + ', bbox:', results[i][2])
-        print('Distance:', distance, 'Direction:', direction)
+    # print("Detection results:")
+    # for i in results:
+    #     x_coordinate = int(results[i][2][0])
+    #     y_coordinate = int(results[i][2][1])
+    #     width = int(results[i][2][2])
+    #     height = int(results[i][2][3])
+    #
+    #     print('Image: ' + results[i][0] + ' (ID:' + str(mapping[results[i][0]]) + '), Coordinates: (' + str(x_coordinate) + ',' + str(
+    #         y_coordinate) + ')' + ', Confidence: ' +
+    #           results[i][1] + ', bbox:', results[i][2])
 
     # generate image mosaic
     result_frame_list = list(images.values())
