@@ -192,9 +192,9 @@ def continuous_detect():
     try:
         print('Image recognition started!')
 
-        curr_index = 0
+        to_stop = False
 
-        while True:
+        while not to_stop:
             # print('Robot coordinates: ' + local_robot_coord)
             cv2.waitKey(50)
 
@@ -202,14 +202,14 @@ def continuous_detect():
             msg = read()
 
             print(msg)
-            if msg == "R0.00":  # take photo command
+            if msg[0] == "R":  # take photo command
                 pass
-            elif msg == "s":  # stop img rec
-                break
+            elif msg[0] == "S":  # stop img rec after last send
+                to_stop = True
             else:
                 continue  # other garbage
 
-            # time.sleep(0.5)
+            obstacle_id = msg[1:]
 
             frame = retrieve_img()
             image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
@@ -274,21 +274,20 @@ def continuous_detect():
                 if height > curr_height and image_id != "bullseye":
                     # img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' + '[(' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ', ' + str(height) + ']'
 
-                    img_rec_string = str(mapping[image_id]) + "|" + str(distance) + "|" + direction + "|" + str(slant)
+                    img_rec_string = "TARGET|" + obstacle_id + "|" + str(mapping[image_id])
 
-                    results[curr_index] = i
-                    images[curr_index] = image
+                    results[obstacle_id] = i
+                    images[obstacle_id] = image
 
-            if curr_index not in images:
+            if obstacle_id not in images:
                 ir_socket.send(img_rec_string.encode(FORMAT))
                 continue
 
             # draw text of image
-            images[curr_index] = cv2.putText(images[curr_index], results[curr_index][0] + ":" + str(mapping[results[curr_index][0]]), (30, 30), cv2.FONT_HERSHEY_TRIPLEX, 1.0, (255, 255, 255), 2)
+            images[obstacle_id] = cv2.putText(images[obstacle_id], "Obstacle " + obstacle_id + ": " + results[obstacle_id][0] + "(" + str(mapping[results[obstacle_id][0]]) + ")", (30, 30), cv2.FONT_HERSHEY_TRIPLEX, 1.0, (255, 255, 255), 2)
 
             message = img_rec_string.encode(FORMAT)
             ir_socket.send(message)
-            curr_index += 1
 
 
 
