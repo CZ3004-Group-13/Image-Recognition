@@ -90,7 +90,7 @@ if __name__ == '__main__':
         while True:
             if counter == 0:
                 algo.write("s") # signal to stop  
-            algo.write("t") # signal to take picture
+            algo.write("R0.00") # signal to take picture
             print(algo.read())
             time.sleep(5)
             print("TRYING TO WRITE")
