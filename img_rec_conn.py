@@ -147,6 +147,40 @@ def continuous_detect():
 
     # local_robot_coord = '(1,1)|N'
 
+    mapping = {
+        "bullseye": 0,
+        "up":       1,
+        "down":     2,
+        "right":    3,
+        "left":     4,
+        "stop":     5,
+        "one":      6,
+        "two":      7,
+        "three":    8,
+        "four":     9,
+        "five":     10,
+        "six":      11,
+        "seven":    12,
+        "eight":    13,
+        "nine":     14,
+        "A":        15,
+        "B":        16,
+        "C":        17,
+        "D":        18,
+        "E":        19,
+        "F":        20,
+        "G":        21,
+        "H":        22,
+        "S":        23,
+        "T":        24,
+        "U":        25,
+        "V":        26,
+        "W":        27,
+        "X":        28,
+        "Y":        29,
+        "Z":        30
+    }
+
     results = {}
     images = {}
     network, class_names, class_colors = darknet.load_network(
@@ -157,6 +191,9 @@ def continuous_detect():
     )
     try:
         print('Image recognition started!')
+
+        curr_index = 0
+
         while True:
             # print('Robot coordinates: ' + local_robot_coord)
             cv2.waitKey(50)
@@ -180,6 +217,11 @@ def continuous_detect():
             # structure: in a list, (id, confidence, [(bbox)])
             # index: 0-id 1-confidence 2-bbox
             # bbox: x,y,w,h
+            img_rec_string = ""
+
+            # keep track of bigger image
+            curr_height = 0
+
             for i in detections:
                 image_id = i[0]  # string
                 confidence = i[1]  # string
@@ -188,33 +230,67 @@ def continuous_detect():
                 y_coordinate = int(bbox[1])
                 width = int(bbox[2])
                 height = int(bbox[3])
-                img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' + '[(' + str(
-                    x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ', ' + str(height) + ']'
 
-                message = img_rec_string.encode(FORMAT)
-                ir_socket.send(message)
-
-                if image_id in results:
-                    # print('ID has been detected before') # USEFUL 
-                    if float(confidence) > float(results[image_id][1]):
-                        # print('Confidence higher. Replacing existing image.') # USEFUL 
-                        del results[image_id]  # remove existing result from dict
-                        del images[image_id]  # remove existing img from dict
-                        results[image_id] = i  # add new result to dict. DUPLICATE ID IN VALUE PAIR!
-                        images[image_id] = image  # add new result to dict
-                    else:
-                        # print('Confidence lower. Keeping existing image.') # USEFUL
-                        pass
+                if height > 190:
+                    distance = 15
+                elif height > 170:
+                    distance = 20
+                elif height > 150:
+                    distance = 25
+                elif height > 133:
+                    distance = 30
+                elif height > 117:
+                    distance = 35
+                elif height > 95:
+                    distance = 40
+                elif height > 85:
+                    distance = 45
+                elif height > 78:
+                    distance = 50
+                elif height > 72:
+                    distance = 55
+                elif height > 64:
+                    distance = 60
+                elif height > 61:
+                    distance = 65
+                elif height > 58:
+                    distance = 70
                 else:
-                    # print('New ID. Saving to results and image dict.') # USEFUL
-                    results[image_id] = i
-                    images[image_id] = image
+                    distance = 75
+                    # 52 is height of 80cm
+
+                if x_coordinate < 83:
+                    direction = "LEFT"
+                elif x_coordinate < 166:
+                    direction = "CENTRE"
+                else:
+                    direction = "RIGHT"
+                    # 250 is maximum
+
+                slant = (width / height < 0.4)
+                # if not slant, width / height is approx 0.5
+
+                # find the bigger image and don't detect bullseye
+                if height > curr_height and image_id != "bullseye":
+                    # img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' + '[(' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ', ' + str(height) + ']'
+
+                    img_rec_string = str(mapping[image_id]) + "|" + str(distance) + "|" + direction + "|" + str(slant)
+
+                    results[curr_index] = i
+                    images[curr_index] = image
+
+            # draw text of image
+            # images[curr_index] = cv2.putText(images[curr_index], results[curr_index][0] + ":" + str(mapping[results[curr_index][0]]), (30, 30), cv2.FONT_HERSHEY_TRIPLEX, 1.0, (255, 255, 255), 2)
+
+            message = img_rec_string.encode(FORMAT)
+            ir_socket.send(message)
+            curr_index += 1
+
+
+
     except KeyboardInterrupt:
         print('End of image recognition.')
 
-    # generate string
-    # img_rec_result_string = '{'
-    img_rec_result_string = ''
     print("Detection results:")
 
     for i in results:
@@ -222,9 +298,6 @@ def continuous_detect():
         y_coordinate = int(results[i][2][1])
         width = int(results[i][2][2])
         height = int(results[i][2][3])
-        id_coordinate_str = '[' + i + ', (' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(
-            width) + ', ' + str(height) + ']' + os.linesep
-        img_rec_result_string += id_coordinate_str
 
         # send string to rpi
         # message = img_rec_result_string.encode(FORMAT)
@@ -272,16 +345,10 @@ def continuous_detect():
         slant = (width / height < 0.4)
         # if not slant, width / height is approx 0.5
 
-        print('ID: ' + i + ', Coordinates: (' + str(x_coordinate) + ',' + str(y_coordinate) + ')' + ', Confidence: ' +
+        print('Image: ' + results[i][0] + ' (ID:' + str(mapping[results[i][0]]) + '), Coordinates: (' + str(x_coordinate) + ',' + str(
+            y_coordinate) + ')' + ', Confidence: ' +
               results[i][1] + ', bbox:', results[i][2])
         print('Distance:', distance, 'Direction:', direction)
-
-    # if img_rec_result_string[-1] == ',':
-    #    img_rec_result_string = img_rec_result_string[:-1]
-    # img_rec_result_string += '}'
-    print(img_rec_result_string)
-    message = img_rec_result_string.encode(FORMAT)
-    ir_socket.send(message)
 
     # generate image mosaic
     result_frame_list = list(images.values())
