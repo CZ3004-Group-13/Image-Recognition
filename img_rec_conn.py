@@ -217,7 +217,7 @@ def continuous_detect():
             # structure: in a list, (id, confidence, [(bbox)])
             # index: 0-id 1-confidence 2-bbox
             # bbox: x,y,w,h
-            img_rec_string = ""
+            img_rec_string = "Nothing detected!!!"
 
             # keep track of bigger image
             curr_height = 0
