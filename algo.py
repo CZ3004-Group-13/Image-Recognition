@@ -86,15 +86,17 @@ class Algo:
 if __name__ == '__main__':
     algo = Algo()
     try:
-        counter = 6
+        number = 8
+        counter = 1
         while True:
-            if counter == 0:
-                algo.write("s") # signal to stop  
-            algo.write("R0.00") # signal to take picture
-            print(algo.read())
             time.sleep(5)
-            print("TRYING TO WRITE")
-            counter -= 1
-            #algo.write("")
+            if counter == number:
+                algo.write("S" + str(counter)) # signal to stop
+                print(algo.read())
+                break
+            else:
+                algo.write("R" + str(counter)) # signal to take picture
+                print(algo.read())
+            counter += 1
     except KeyboardInterrupt:
         print("Terminating the program now...")
