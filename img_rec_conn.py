@@ -1,8 +1,5 @@
 import os
-# Setup sending of string and receiving of coordinate
-# import threading
 import socket
-import time
 
 import cv2
 import numpy as np
@@ -13,8 +10,6 @@ PORT = 3055
 FORMAT = 'utf-8'
 SERVER = '192.168.13.13'
 ADDR = (SERVER, PORT)
-
-# robot_coord = 'empty'
 
 ir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ir_socket.connect(ADDR)
@@ -103,9 +98,11 @@ def image_detection(image, network, class_names, class_colors, thresh):
     image = darknet.draw_boxes(detections, image_resized, class_colors)
     return cv2.cvtColor(image, cv2.COLOR_BGR2RGB), detections
 
+
 def chunks(lst, n):
     for counter in range(0, len(lst), n):
         yield lst[counter:counter + n]
+
 
 def show_all_images(frame_list):
     # for index, frame in enumerate(frame_list):
@@ -117,10 +114,9 @@ def show_all_images(frame_list):
             break
         frame_list.append(blank_image)
 
-    list = tuple(chunks(frame_list, 3))
+    formatted_list = tuple(chunks(frame_list, 3))
 
-
-    img_stack = stack_images(2, list)
+    img_stack = stack_images(2, formatted_list)
     cv2.imshow("Images", img_stack)
     cv2.imwrite("detected.jpg", img_stack)
 
@@ -230,77 +226,78 @@ def continuous_detect():
             # bbox: x,y,w,h
             img_rec_string = "Nothing detected!!!"
 
-            # keep track of bigger image
-            curr_height = 0
+            while obstacle_id not in images:
+                # keep track of bigger image
+                curr_height = 0
 
-            for i in detections:
-                image_id = i[0]  # string
-                confidence = i[1]  # string
-                bbox = i[2]  # tuple
-                x_coordinate = int(bbox[0])
-                y_coordinate = int(bbox[1])
-                width = int(bbox[2])
-                height = int(bbox[3])
+                for i in detections:
+                    image_id = i[0]  # string
+                    confidence = i[1]  # string
+                    bbox = i[2]  # tuple
+                    x_coordinate = int(bbox[0])
+                    y_coordinate = int(bbox[1])
+                    width = int(bbox[2])
+                    height = int(bbox[3])
 
-                if height > 190:
-                    distance = 15
-                elif height > 170:
-                    distance = 20
-                elif height > 150:
-                    distance = 25
-                elif height > 133:
-                    distance = 30
-                elif height > 117:
-                    distance = 35
-                elif height > 95:
-                    distance = 40
-                elif height > 85:
-                    distance = 45
-                elif height > 78:
-                    distance = 50
-                elif height > 72:
-                    distance = 55
-                elif height > 64:
-                    distance = 60
-                elif height > 61:
-                    distance = 65
-                elif height > 58:
-                    distance = 70
-                else:
-                    distance = 75
-                    # 52 is height of 80cm
+                    if height > 190:
+                        distance = 15
+                    elif height > 170:
+                        distance = 20
+                    elif height > 150:
+                        distance = 25
+                    elif height > 133:
+                        distance = 30
+                    elif height > 117:
+                        distance = 35
+                    elif height > 95:
+                        distance = 40
+                    elif height > 85:
+                        distance = 45
+                    elif height > 78:
+                        distance = 50
+                    elif height > 72:
+                        distance = 55
+                    elif height > 64:
+                        distance = 60
+                    elif height > 61:
+                        distance = 65
+                    elif height > 58:
+                        distance = 70
+                    else:
+                        distance = 75
+                        # 52 is height of 80cm
 
-                if x_coordinate < 83:
-                    position = "LEFT"
-                elif x_coordinate < 166:
-                    position = "CENTRE"
-                else:
-                    position = "RIGHT"
-                    # 250 is maximum
+                    if x_coordinate < 83:
+                        position = "LEFT"
+                    elif x_coordinate < 166:
+                        position = "CENTRE"
+                    else:
+                        position = "RIGHT"
+                        # 250 is maximum
 
-                slant = (width / height < 0.4)
-                # if not slant, width / height is approx 0.5
+                    slant = (width / height < 0.4)
+                    # if not slant, width / height is approx 0.5
 
-                # find the bigger image and don't detect bullseye
-                if height > curr_height and image_id != "bullseye":
-                    # img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' + '[(' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ', ' + str(height) + ']'
+                    # find the bigger image and don't detect bullseye
+                    if height > curr_height and image_id != "bullseye":
+                        # img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' +
+                        # '[(' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ',
+                        # ' + str(height) + ']'
 
-                    img_rec_string = "TARGET|" + obstacle_id + "|" + str(mapping[image_id]) + "|" + str(distance) + "|" + position
+                        img_rec_string = "TARGET|" + obstacle_id + "|" + str(mapping[image_id]) + "|" + str(
+                            distance) + "|" + position
 
-                    results[obstacle_id] = i
-                    images[obstacle_id] = image
-
-            if obstacle_id not in images:
-                ir_socket.send(img_rec_string.encode(FORMAT))
-                continue
+                        results[obstacle_id] = i
+                        images[obstacle_id] = image
 
             # draw text of image
-            images[obstacle_id] = cv2.putText(images[obstacle_id], "Obstacle " + obstacle_id + ": " + results[obstacle_id][0] + "(" + str(mapping[results[obstacle_id][0]]) + ")", (20, 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, (255, 255, 255), 2)
+            images[obstacle_id] = cv2.putText(images[obstacle_id],
+                                              "Obstacle " + obstacle_id + ": " + results[obstacle_id][0] + "(" + str(
+                                                  mapping[results[obstacle_id][0]]) + ")", (20, 20),
+                                              cv2.FONT_HERSHEY_TRIPLEX, 0.5, (255, 255, 255), 2)
 
             message = img_rec_string.encode(FORMAT)
             ir_socket.send(message)
-
-
 
     except KeyboardInterrupt:
         print('End of image recognition.')
@@ -312,9 +309,8 @@ def continuous_detect():
     #     width = int(results[i][2][2])
     #     height = int(results[i][2][3])
     #
-    #     print('Image: ' + results[i][0] + ' (ID:' + str(mapping[results[i][0]]) + '), Coordinates: (' + str(x_coordinate) + ',' + str(
-    #         y_coordinate) + ')' + ', Confidence: ' +
-    #           results[i][1] + ', bbox:', results[i][2])
+    # print('Image: ' + results[i][0] + ' (ID:' + str(mapping[results[i][0]]) + '), Coordinates: (' + str(
+    # x_coordinate) + ',' + str( y_coordinate) + ')' + ', Confidence: ' + results[i][1] + ', bbox:', results[i][2])
 
     # generate image mosaic
     result_frame_list = list(images.values())
