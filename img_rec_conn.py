@@ -25,7 +25,7 @@ DATA_FILE_PATH = './data/yolov4.data'
 RPI_IP = '192.168.13.13'
 MJPEG_STREAM_URL = 'http://' + RPI_IP + '/html/cam_pic_new.php'
 YOLO_BATCH_SIZE = 4
-THRESH = 0.85  # may want to lower and do filter for specific images later
+THRESH = 0.9  # may want to lower and do filter for specific images later
 
 # change this directory accordingly
 os.chdir("C:\\darknet\\darknet-master\\build\\darknet\\x64")
@@ -103,15 +103,26 @@ def image_detection(image, network, class_names, class_colors, thresh):
     image = darknet.draw_boxes(detections, image_resized, class_colors)
     return cv2.cvtColor(image, cv2.COLOR_BGR2RGB), detections
 
+def chunks(lst, n):
+    for counter in range(0, len(lst), n):
+        yield lst[counter:counter + n]
 
 def show_all_images(frame_list):
     # for index, frame in enumerate(frame_list):
     #    frame = imutils.resize(frame, width=400)
     #    cv2.imshow('Image' + str(index), frame)
+    blank_image = np.zeros_like(frame_list[0])
+    for i in range(3):
+        if len(frame_list) % 3 == 0:
+            break
+        frame_list.append(blank_image)
 
-    img_stack = stack_images(2, frame_list)
+    list = tuple(chunks(frame_list, 3))
+
+
+    img_stack = stack_images(2, list)
     cv2.imshow("Images", img_stack)
-    cv2.imwrite("test/detected.jpg", img_stack)
+    cv2.imwrite("detected.jpg", img_stack)
 
     if cv2.waitKey() & 0xFF == ord('q'):
         cv2.destroyAllWindows()
@@ -284,7 +295,7 @@ def continuous_detect():
                 continue
 
             # draw text of image
-            images[obstacle_id] = cv2.putText(images[obstacle_id], "Obstacle " + obstacle_id + ": " + results[obstacle_id][0] + "(" + str(mapping[results[obstacle_id][0]]) + ")", (30, 30), cv2.FONT_HERSHEY_TRIPLEX, 1.0, (255, 255, 255), 2)
+            images[obstacle_id] = cv2.putText(images[obstacle_id], "Obstacle " + obstacle_id + ": " + results[obstacle_id][0] + "(" + str(mapping[results[obstacle_id][0]]) + ")", (20, 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, (255, 255, 255), 2)
 
             message = img_rec_string.encode(FORMAT)
             ir_socket.send(message)
