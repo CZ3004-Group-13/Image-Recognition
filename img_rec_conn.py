@@ -105,9 +105,6 @@ def chunks(lst, n):
 
 
 def show_all_images(frame_list):
-    # for index, frame in enumerate(frame_list):
-    #    frame = imutils.resize(frame, width=400)
-    #    cv2.imshow('Image' + str(index), frame)
     blank_image = np.zeros_like(frame_list[0])
     for i in range(3):
         if len(frame_list) % 3 == 0:
@@ -116,9 +113,12 @@ def show_all_images(frame_list):
 
     formatted_list = tuple(chunks(frame_list, 3))
 
-    img_stack = stack_images(2, formatted_list)
+    img_stack = stack_images(1, formatted_list)
     cv2.imshow("Images", img_stack)
-    cv2.imwrite("detected.jpg", img_stack)
+    cv2.imwrite("detected_images.jpg", img_stack)
+
+    # Write into one more location because I am kiasu
+    cv2.imwrite("test/detected_images.jpg", img_stack)
 
     if cv2.waitKey() & 0xFF == ord('q'):
         cv2.destroyAllWindows()
@@ -218,15 +218,16 @@ def continuous_detect():
 
             obstacle_id = msg[1:]
 
-            frame = retrieve_img()
-            image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
+            img_rec_string = "Nothing detected..."
 
             # structure: in a list, (id, confidence, [(bbox)])
             # index: 0-id 1-confidence 2-bbox
             # bbox: x,y,w,h
-            img_rec_string = "Nothing detected!!!"
 
             while obstacle_id not in images:
+                frame = retrieve_img()
+                image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
+
                 # keep track of bigger image
                 curr_height = 0
 
@@ -292,25 +293,15 @@ def continuous_detect():
 
             # draw text of image
             images[obstacle_id] = cv2.putText(images[obstacle_id],
-                                              "Obstacle " + obstacle_id + ": " + results[obstacle_id][0] + "(" + str(
-                                                  mapping[results[obstacle_id][0]]) + ")", (20, 20),
-                                              cv2.FONT_HERSHEY_TRIPLEX, 0.5, (255, 255, 255), 2)
+                                              "Obstacle #" + obstacle_id + ": " + results[obstacle_id][0] + "(" + str(
+                                                  mapping[results[obstacle_id][0]]) + ")", (10, 20),
+                                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
 
             message = img_rec_string.encode(FORMAT)
             ir_socket.send(message)
 
     except KeyboardInterrupt:
         print('End of image recognition.')
-
-    # print("Detection results:")
-    # for i in results:
-    #     x_coordinate = int(results[i][2][0])
-    #     y_coordinate = int(results[i][2][1])
-    #     width = int(results[i][2][2])
-    #     height = int(results[i][2][3])
-    #
-    # print('Image: ' + results[i][0] + ' (ID:' + str(mapping[results[i][0]]) + '), Coordinates: (' + str(
-    # x_coordinate) + ',' + str( y_coordinate) + ')' + ', Confidence: ' + results[i][1] + ', bbox:', results[i][2])
 
     # generate image mosaic
     result_frame_list = list(images.values())
