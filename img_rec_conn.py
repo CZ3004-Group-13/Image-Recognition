@@ -224,73 +224,77 @@ def continuous_detect():
             # index: 0-id 1-confidence 2-bbox
             # bbox: x,y,w,h
 
-            while obstacle_id not in images:
-                frame = retrieve_img()
-                image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
+            
+            frame = retrieve_img()
+            image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
 
-                # keep track of bigger image
-                curr_height = 0
+            # keep track of bigger image
+            curr_height = 0
 
-                for i in detections:
-                    image_id = i[0]  # string
-                    confidence = i[1]  # string
-                    bbox = i[2]  # tuple
-                    x_coordinate = int(bbox[0])
-                    y_coordinate = int(bbox[1])
-                    width = int(bbox[2])
-                    height = int(bbox[3])
+            for i in detections:
+                image_id = i[0]  # string
+                confidence = i[1]  # string
+                bbox = i[2]  # tuple
+                x_coordinate = int(bbox[0])
+                y_coordinate = int(bbox[1])
+                width = int(bbox[2])
+                height = int(bbox[3])
 
-                    if height > 190:
-                        distance = 15
-                    elif height > 170:
-                        distance = 20
-                    elif height > 150:
-                        distance = 25
-                    elif height > 133:
-                        distance = 30
-                    elif height > 117:
-                        distance = 35
-                    elif height > 95:
-                        distance = 40
-                    elif height > 85:
-                        distance = 45
-                    elif height > 78:
-                        distance = 50
-                    elif height > 72:
-                        distance = 55
-                    elif height > 64:
-                        distance = 60
-                    elif height > 61:
-                        distance = 65
-                    elif height > 58:
-                        distance = 70
-                    else:
-                        distance = 75
-                        # 52 is height of 80cm
+                if height > 190:
+                    distance = 15
+                elif height > 170:
+                    distance = 20
+                elif height > 150:
+                    distance = 25
+                elif height > 133:
+                    distance = 30
+                elif height > 117:
+                    distance = 35
+                elif height > 95:
+                    distance = 40
+                elif height > 85:
+                    distance = 45
+                elif height > 78:
+                    distance = 50
+                elif height > 72:
+                    distance = 55
+                elif height > 64:
+                    distance = 60
+                elif height > 61:
+                    distance = 65
+                elif height > 58:
+                    distance = 70
+                else:
+                    distance = 75
+                    # 52 is height of 80cm
 
-                    if x_coordinate < 83:
-                        position = "LEFT"
-                    elif x_coordinate < 166:
-                        position = "CENTRE"
-                    else:
-                        position = "RIGHT"
-                        # 250 is maximum
+                if x_coordinate < 83:
+                    position = "LEFT"
+                elif x_coordinate < 166:
+                    position = "CENTRE"
+                else:
+                    position = "RIGHT"
+                    # 250 is maximum
 
-                    slant = (width / height < 0.4)
-                    # if not slant, width / height is approx 0.5
+                slant = (width / height < 0.4)
+                # if not slant, width / height is approx 0.5
 
-                    # find the bigger image and don't detect bullseye
-                    if height > curr_height and image_id != "bullseye":
-                        # img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' +
-                        # '[(' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ',
-                        # ' + str(height) + ']'
-                        curr_height = height
+                # find the bigger image and don't detect bullseye
+                if height > curr_height and image_id != "bullseye":
+                    # img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' +
+                    # '[(' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ',
+                    # ' + str(height) + ']'
+                    curr_height = height
 
-                        img_rec_string = "TARGET|" + obstacle_id + "|" + str(mapping[image_id]) + "|" + str(
-                            distance) + "|" + position
+                    img_rec_string = obstacle_id + "|" + str(mapping[image_id]) + "|" + str(
+                        distance) + "|" + position
 
-                        results[obstacle_id] = i
-                        images[obstacle_id] = image
+                    results[obstacle_id] = i
+                    images[obstacle_id] = image
+                    
+            if obstacle_id not in images:
+                ir_socket.send(img_rec_string.encode(FORMAT))
+                continue
 
             # draw text of image
             images[obstacle_id] = cv2.putText(images[obstacle_id],
