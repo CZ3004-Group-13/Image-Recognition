@@ -284,6 +284,7 @@ def continuous_detect():
                         # img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' +
                         # '[(' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ',
                         # ' + str(height) + ']'
+                        curr_height = height
 
                         img_rec_string = "TARGET|" + obstacle_id + "|" + str(mapping[image_id]) + "|" + str(
                             distance) + "|" + position
