@@ -224,7 +224,6 @@ def continuous_detect():
             # index: 0-id 1-confidence 2-bbox
             # bbox: x,y,w,h
 
-            
             frame = retrieve_img()
             image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
 
@@ -275,13 +274,10 @@ def continuous_detect():
                 else:
                     position = "RIGHT"
                     # 250 is maximum
-                    #if Left, reverse shift left
-                    #if right, reverse shit right
+
                 slant = (width / height < 0.4)
                 # if not slant, width / height is approx 0.5
-                # if slant left, reverse to shift left, turn right. If detect nothing, reverse right, reverse shift right twice, then turn left
-                # if slant right, reverse to shift right, turn left. If detect nothing reverse left, reserse shift left twice, then turn right
-                # if slant centre, reverse shift left. If detect nothing, reverse shift right twice. Then, check whether it slant left or right, then implement accordingly
+
                 # find the bigger image and don't detect bullseye
                 if height > curr_height and image_id != "bullseye":
                     # img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' +
@@ -290,11 +286,11 @@ def continuous_detect():
                     curr_height = height
 
                     img_rec_string = obstacle_id + "|" + str(mapping[image_id]) + "|" + str(
-                        distance) + "|" + position + "|" + str(slant)
+                        distance) + "|" + position
 
                     results[obstacle_id] = i
                     images[obstacle_id] = image
-                    
+
             if obstacle_id not in images:
                 ir_socket.send(img_rec_string.encode(FORMAT))
                 continue
