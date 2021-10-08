@@ -31,7 +31,7 @@ Install RPi_Cam_Web_Interface:
 - sudo apt-get dist-upgrade
 - sudo apt-get install git
 
-5. Clone the code from github and enable and run the install script with the following commands: git
+5. Clone the code from GitHub and enable and run the install script with the following commands: git
    clone https://github.com/silvanmelchior/RPi_Cam_Web_Interface.git
    cd RPi_Cam_Web_Interface
 6. Lastly, carry on with the installation: ./install.sh

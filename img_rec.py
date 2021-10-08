@@ -244,7 +244,7 @@ def continuous_detect():
                     distance = 70
                 else:
                     distance = 75
-                    # 52 is height of 80cm
+                    # 52 is height of 80 cm
 
                 if x_coordinate < 83:
                     position = "LEFT"

@@ -14,8 +14,9 @@ On a GPU system, you can force CPU evaluation by any of:
 
 Directly viewing or returning bounding-boxed images requires scikit-image to be installed (`pip install scikit-image`)
 
-Original *nix 2.7: https://github.com/pjreddie/darknet/blob/0f110834f4e18b30d5f101bf8f1724c34b7b83db/python/darknet.py
-Windows Python 2.7 version: https://github.com/AlexeyAB/darknet/blob/fc496d52bf22a0bb257300d3c79be9cd80e722cb/build/darknet/x64/darknet.py
+Original *nix 2.7: https://github.com/pjreddie/darknet/blob/0f110834f4e18b30d5f101bf8f1724c34b7b83db/python/darknet
+.py Windows Python 2.7 version: https://github.com/AlexeyAB/darknet/blob/fc496d52bf22a0bb257300d3c79be9cd80e722cb
+/build/darknet/x64/darknet.py
 
 @author: Philip Kahn
 @date: 20180503
@@ -29,7 +30,8 @@ os.add_dll_directory(os.path.dirname(__file__))
 
 print("Run: darknet_images.py or:\n")
 print(
-    "python.exe darknet_video.py --data_file cfg/coco.data --config_file cfg/yolov4.cfg --weights yolov4.weights --input test.mp4 \n")
+    "python.exe darknet_video.py --data_file cfg/coco.data --config_file cfg/yolov4.cfg --weights yolov4.weights "
+    "--input test.mp4 \n")
 
 
 class BOX(Structure):
@@ -165,13 +167,13 @@ def remove_negatives(detections, class_names, num):
             if detections[j].prob[idx] > 0:
                 bbox = detections[j].bbox
                 bbox = (bbox.x, bbox.y, bbox.w, bbox.h)
-                predictions.append((name, detections[j].prob[idx], (bbox)))
+                predictions.append((name, detections[j].prob[idx], bbox))
     return predictions
 
 
 def detect_image(network, class_names, image, thresh=.5, hier_thresh=.5, nms=.45):
     """
-        Returns a list with highest confidence class and their bbox
+        Returns a list with the highest confidence class and their bbox
     """
     pnum = pointer(c_int(0))
     predict_image(network, image)
@@ -224,7 +226,7 @@ if os.name == "nt":
             lib = CDLL(winNoGPUdll, RTLD_GLOBAL)
             print("Notice: CPU-only mode")
         else:
-            # Try the other way, in case no_gpu was compile but not renamed
+            # Try the other way, in case no_gpu was compiled but not renamed
             lib = CDLL(winGPUdll, RTLD_GLOBAL)
             print("Environment variables indicated a CPU run, but we didn't find {}. Trying a GPU run anyway.".format(
                 winNoGPUdll))
