@@ -201,7 +201,11 @@ def continuous_detect():
 
         to_stop = False
 
-        while not to_stop:
+        imagecounter = 0
+        
+        counter = 5
+
+        while not to_stop or counter > 0:
             # print('Robot coordinates: ' + local_robot_coord)
             cv2.waitKey(50)
 
@@ -294,13 +298,23 @@ def continuous_detect():
                     
             if obstacle_id not in images:
                 ir_socket.send(img_rec_string.encode(FORMAT))
+                if to_stop:
+                    counter -= 1
                 continue
+            
+            if to_stop:
+                counter = 0
 
             # draw text of image
             images[obstacle_id] = cv2.putText(images[obstacle_id],
                                               "Obstacle #" + obstacle_id + ": " + results[obstacle_id][0] + "(" + str(
                                                   mapping[results[obstacle_id][0]]) + ")", (10, 20),
                                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
+
+            cv2.imwrite("images" + str(imagecounter) + ".jpg", images[obstacle_id])
+            cv2.imwrite("test/images" + str(imagecounter) + ".jpg", images[obstacle_id])
+            
+            imagecounter += 1
 
             message = img_rec_string.encode(FORMAT)
             ir_socket.send(message)
