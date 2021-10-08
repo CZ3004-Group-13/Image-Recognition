@@ -1,6 +1,6 @@
 # Before running, please change to the correct directory!
-import os
 import time
+
 from picamera import PiCamera
 
 camera = PiCamera()

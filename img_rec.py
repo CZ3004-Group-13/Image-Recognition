@@ -294,6 +294,7 @@ def continuous_detect():
     result_frame_list = list(images.values())
     show_all_images(result_frame_list)
 
+
 def read():
     """
     Reads message from server.

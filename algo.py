@@ -1,8 +1,9 @@
+import errno
 import socket
 import sys
-import traceback
-import errno
 import time
+import traceback
+
 from config import *
 
 
@@ -91,11 +92,11 @@ if __name__ == '__main__':
         while True:
             time.sleep(5)
             if counter == number:
-                algo.write("S" + str(counter)) # signal to stop
+                algo.write("S" + str(counter))  # signal to stop
                 print(algo.read())
                 break
             else:
-                algo.write("R" + str(counter)) # signal to take picture
+                algo.write("R" + str(counter))  # signal to take picture
                 print(algo.read())
             counter += 1
     except KeyboardInterrupt:
