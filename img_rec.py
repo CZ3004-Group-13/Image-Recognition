@@ -9,10 +9,10 @@ import darknet
 PORT = 3055
 FORMAT = 'utf-8'
 SERVER = '192.168.13.13'
-ADDR = (SERVER, PORT)
+ADDRESS = (SERVER, PORT)
 
 ir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ir_socket.connect(ADDR)
+ir_socket.connect(ADDRESS)
 
 WEIGHT_FILE_PATH = './backup/yolov4_custom_train_final.weights'
 CONFIG_FILE_PATH = './cfg/yolov4_custom_test.cfg'
@@ -20,23 +20,17 @@ DATA_FILE_PATH = './data/yolov4.data'
 RPI_IP = '192.168.13.13'
 MJPEG_STREAM_URL = 'http://' + RPI_IP + '/html/cam_pic_new.php'
 YOLO_BATCH_SIZE = 4
-THRESH = 0.9  # may want to lower and do filter for specific images later
+THRESH = 0.9
 
 # change this directory accordingly
 os.chdir("C:\\darknet\\darknet-master\\build\\darknet\\x64")
 
 
-def split(arr, size):
-    arrs = []
-    while len(arr) > size:
-        pice = arr[:size]
-        arrs.append(pice)
-        arr = arr[size:]
-    arrs.append(arr)
-    return arrs
-
-
 def stack_images(scale, img_array):
+    """
+    Given array of arrays, stack images into one giant image.
+    """
+
     rows = len(img_array)
     cols = len(img_array[0])
     rows_available = isinstance(img_array[0], list)
@@ -72,18 +66,23 @@ def stack_images(scale, img_array):
 
 
 def retrieve_img():
-    # captures a frame from mjpeg stream
-    # returns opencv image
+    """
+    Captures a frame from mjpeg stream and returns an OpenCV image.
+    """
+
     cap = cv2.VideoCapture(MJPEG_STREAM_URL)
     ret, frame = cap.read()
     return frame
 
 
 def image_detection(image, network, class_names, class_colors, thresh):
-    # Darknet doesn't accept numpy images.
-    # Create one with image we reuse for each detect
-    # Modified from darknet_images.py
-    # Takes in direct image instead of path
+    """
+    Darknet doesn't accept numpy images.
+    Create one with image we reuse for each detect.
+    Modified from darknet_images.py.
+    Takes in direct image instead of path.
+    """
+
     width = darknet.network_width(network)
     height = darknet.network_height(network)
     darknet_image = darknet.make_image(width, height, 3)
@@ -100,11 +99,19 @@ def image_detection(image, network, class_names, class_colors, thresh):
 
 
 def chunks(lst, n):
+    """
+    Splits an array of images into chunks of size n.
+    """
+
     for counter in range(0, len(lst), n):
         yield lst[counter:counter + n]
 
 
 def show_all_images(frame_list):
+    """
+    Shows all the images in an array.
+    """
+
     blank_image = np.zeros_like(frame_list[0])
     for i in range(3):
         if len(frame_list) % 3 == 0:
@@ -124,35 +131,10 @@ def show_all_images(frame_list):
         cv2.destroyAllWindows()
 
 
-# def test_detect():
-#     frame = cv2.imread('C:\\darknet\\darknet-master\\build\\darknet\\x64\\examples\\test_image_1.jpg')
-#     # frame = retrieve_img()
-#     network, class_names, class_colors = darknet.load_network(
-#         CONFIG_FILE_PATH,
-#         DATA_FILE_PATH,
-#         WEIGHT_FILE_PATH,
-#         YOLO_BATCH_SIZE
-#     )
-#
-#     image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
-#     print(detections)
-#     cv2.imshow('Inference', image)
-#     if cv2.waitKey() & 0xFF == ord('q'):
-#         cv2.destroyAllWindows()
-#     cv2.imwrite('./result.jpeg', image)
-
-
 def continuous_detect():
-    # use dictionary to store results
-    # structure: dictionary, tuple of (id, confidence,(bbox))
-    # bbox: x,y,w,h
-    # global robot_coord
-    # local_robot_coord = 'empty'
-    # if robot_coord != 'empty':
-    #    local_robot_coord = robot_coord
-    #    robot_coord = 'empty'
-
-    # local_robot_coord = '(1,1)|N'
+    """
+    Runs detection continuously.
+    """
 
     mapping = {
         "bullseye": 0,
@@ -198,18 +180,14 @@ def continuous_detect():
     )
     try:
         print('Image recognition started!')
-
         to_stop = False
 
         imagecounter = 0
-        
         counter = 5
 
         while not to_stop or counter > 0:
-            # print('Robot coordinates: ' + local_robot_coord)
             cv2.waitKey(50)
 
-            # msg = ir_socket.recv(1024).decode()
             msg = read()
 
             print(msg)
@@ -218,7 +196,7 @@ def continuous_detect():
             elif msg[0] == "S":  # stop img rec after last send
                 to_stop = True
             else:
-                continue  # other garbage
+                continue
 
             obstacle_id = msg[1:]
 
@@ -236,11 +214,8 @@ def continuous_detect():
 
             for i in detections:
                 image_id = i[0]  # string
-                confidence = i[1]  # string
                 bbox = i[2]  # tuple
                 x_coordinate = int(bbox[0])
-                y_coordinate = int(bbox[1])
-                width = int(bbox[2])
                 height = int(bbox[3])
 
                 if height > 190:
@@ -279,14 +254,8 @@ def continuous_detect():
                     position = "RIGHT"
                     # 250 is maximum
 
-                slant = (width / height < 0.4)
-                # if not slant, width / height is approx 0.5
-
                 # find the bigger image and don't detect bullseye
                 if height > curr_height and image_id != "bullseye":
-                    # img_rec_string = 'ID detected: ' + image_id + ', confidence: ' + confidence + ', bbox:' +
-                    # '[(' + str(x_coordinate) + ', ' + str(y_coordinate) + '), ' + str(width) + ',
-                    # ' + str(height) + ']'
                     curr_height = height
 
                     img_rec_string = obstacle_id + "|" + str(mapping[image_id]) + "|" + str(
@@ -300,7 +269,7 @@ def continuous_detect():
                 if to_stop:
                     counter -= 1
                 continue
-            
+
             if to_stop:
                 counter = 0
 
@@ -312,7 +281,7 @@ def continuous_detect():
 
             cv2.imwrite("images" + str(imagecounter) + ".jpg", images[obstacle_id])
             cv2.imwrite("test/images" + str(imagecounter) + ".jpg", images[obstacle_id])
-            
+
             imagecounter += 1
 
             message = img_rec_string.encode(FORMAT)
@@ -325,16 +294,10 @@ def continuous_detect():
     result_frame_list = list(images.values())
     show_all_images(result_frame_list)
 
-
-def read_rpi():
-    while True:
-        msg = ir_socket.recv(1024)
-        if msg:
-            print('Received Message from RPi!')
-            return msg
-
-
 def read():
+    """
+    Reads message from server.
+    """
     try:
         msg = ir_socket.recv(1024).decode()
         return msg
@@ -343,10 +306,4 @@ def read():
 
 
 if __name__ == "__main__":
-    # test_detect()
-    # read_rpi_thread = threading.Thread(target=read_rpi, name="read_rpi_thread")
-    # read_rpi_thread.daemon = True
-    # print('Starting RPi comm thread...')
-    # read_rpi_thread.start()
-    # print('RPi comm thread started.')
     continuous_detect()
