@@ -24,6 +24,7 @@ THRESH = 0.9
 
 # change this directory accordingly
 os.chdir(CURRENT_WORKING_PATH)
+to_stop = False
 
 
 def retrieve_img():
@@ -72,7 +73,6 @@ def continuous_detect():
     )
     try:
         print("Image recognition started!")
-        to_stop = False
 
         while not to_stop:
 
@@ -162,11 +162,19 @@ def read_msg():
     """
     Reads message from server.
     """
-    try:
-        msg = ir_socket.recv(1024).decode()
-        return msg
-    except socket.error as e:
-        print("exception: ", e)
+    global to_stop
+    while not to_stop:
+        try:
+            msg = ir_socket.recv(1024).decode()
+            print(msg)
+            if msg[0] == "R":  # take photo command
+                pass
+            elif msg[0] == "S":  # stop img rec after last send
+                to_stop = True
+            else:
+                continue
+        except socket.error as e:
+            print("exception: ", e)
 
 
 def main():
@@ -174,11 +182,11 @@ def main():
     Main function
     """
 
-    # read_rpi_thread = threading.Thread(target=read_msg, name="read_rpi_thread")
-    # read_rpi_thread.daemon = True
-    # print('Starting RPi comm thread...')
-    # read_rpi_thread.start()
-    # print('RPi comm thread started.')
+    read_rpi_thread = threading.Thread(target=read_msg, name="read_rpi_thread")
+    read_rpi_thread.daemon = True
+    print('Starting RPi comm thread...')
+    read_rpi_thread.start()
+    print('RPi comm thread started.')
     continuous_detect()
 
 
