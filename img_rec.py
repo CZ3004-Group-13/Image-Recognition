@@ -2,33 +2,33 @@ import os
 import socket
 
 import cv2
-import numpy as np
+import numpy
 
 import darknet
 
 PORT = 3055
-FORMAT = 'utf-8'
-SERVER = '192.168.13.13'
+FORMAT = "utf-8"
+SERVER = "192.168.13.13"
 ADDRESS = (SERVER, PORT)
 
-ir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ir_socket.connect(ADDRESS)
+conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+conn.connect(ADDRESS)
 
-WEIGHT_FILE_PATH = './backup/yolov4_custom_train_final.weights'
-CONFIG_FILE_PATH = './cfg/yolov4_custom_test.cfg'
-DATA_FILE_PATH = './data/yolov4.data'
-RPI_IP = '192.168.13.13'
-MJPEG_STREAM_URL = 'http://' + RPI_IP + '/html/cam_pic_new.php'
+WEIGHT_FILE_PATH = "./backup/yolov4_custom_train_final.weights"
+CONFIG_FILE_PATH = "./cfg/yolov4_custom_test.cfg"
+DATA_FILE_PATH = "./data/yolov4.data"
+RPI_IP = "192.168.13.13"
+MJPEG_STREAM_URL = "http://" + RPI_IP + "/html/cam_pic_new.php"
 YOLO_BATCH_SIZE = 4
 THRESH = 0.9
 
-# change this directory accordingly
 os.chdir("C:\\darknet\\darknet-master\\build\\darknet\\x64")
 
 
 def stack_images(scale, img_array):
     """
     Given array of arrays, stack images into one giant image.
+    Taken from https://github.com/murtazahassan/Learn-OpenCV-in-3-hours/blob/master/chapter8.py and modified
     """
 
     rows = len(img_array)
@@ -46,11 +46,11 @@ def stack_images(scale, img_array):
                                                  None, scale, scale)
                 if len(img_array[x][y].shape) == 2:
                     img_array[x][y] = cv2.cvtColor(img_array[x][y], cv2.COLOR_GRAY2BGR)
-        image_blank = np.zeros((height, width, 3), np.uint8)
+        image_blank = numpy.zeros((height, width, 3), numpy.uint8)
         hor = [image_blank] * rows
         for x in range(0, rows):
-            hor[x] = np.hstack(img_array[x])
-        ver = np.vstack(hor)
+            hor[x] = numpy.hstack(img_array[x])
+        ver = numpy.vstack(hor)
     else:
         for x in range(0, rows):
             if img_array[x].shape[:2] == img_array[0].shape[:2]:
@@ -60,12 +60,12 @@ def stack_images(scale, img_array):
                                           scale)
             if len(img_array[x].shape) == 2:
                 img_array[x] = cv2.cvtColor(img_array[x], cv2.COLOR_GRAY2BGR)
-        hor = np.hstack(img_array)
+        hor = numpy.hstack(img_array)
         ver = hor
     return ver
 
 
-def retrieve_img():
+def capture_img():
     """
     Captures a frame from mjpeg stream and returns an OpenCV image.
     """
@@ -75,12 +75,9 @@ def retrieve_img():
     return frame
 
 
-def image_detection(image, network, class_names, class_colors, thresh):
+def run_image_detection(image, network, class_names, class_colors, thresh):
     """
-    Darknet doesn't accept numpy images.
-    Create one with image we reuse for each detect.
-    Modified from darknet_images.py.
-    Takes in direct image instead of path.
+    Does image detection using darknet and returns detection
     """
 
     width = darknet.network_width(network)
@@ -101,6 +98,7 @@ def image_detection(image, network, class_names, class_colors, thresh):
 def chunks(lst, n):
     """
     Splits an array of images into chunks of size n.
+    Taken from https://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
     """
 
     for counter in range(0, len(lst), n):
@@ -109,10 +107,11 @@ def chunks(lst, n):
 
 def show_all_images(frame_list):
     """
-    Shows all the images in an array.
+    Shows all the images in the given array.
+    It will ensure that the array is of size divisible by 3, so the giant image can be properly shown.
     """
 
-    blank_image = np.zeros_like(frame_list[0])
+    blank_image = numpy.zeros_like(frame_list[0])
     for i in range(3):
         if len(frame_list) % 3 == 0:
             break
@@ -124,18 +123,16 @@ def show_all_images(frame_list):
     cv2.imshow("Images", img_stack)
     cv2.imwrite("detected_images.jpg", img_stack)
 
-    # Write into one more location because I am kiasu
-    cv2.imwrite("test/detected_images.jpg", img_stack)
-
-    if cv2.waitKey() & 0xFF == ord('q'):
+    if cv2.waitKey() & 0xFF == ord("q"):
         cv2.destroyAllWindows()
 
 
-def continuous_detect():
+def continuous_detection():
     """
     Runs detection continuously.
     """
 
+    # Mapping of image names to id
     mapping = {
         "bullseye": 0,
         "up":       1,
@@ -179,10 +176,10 @@ def continuous_detect():
         YOLO_BATCH_SIZE
     )
     try:
-        print('Image recognition started!')
+        print("Image recognition started!")
         to_stop = False
 
-        imagecounter = 0
+        image_counter = 0
         counter = 5
 
         while not to_stop or counter > 0:
@@ -190,7 +187,9 @@ def continuous_detect():
 
             msg = read()
 
+            # Show read message
             print(msg)
+
             if msg[0] == "R":  # take photo command
                 pass
             elif msg[0] == "S":  # stop img rec after last send
@@ -206,18 +205,19 @@ def continuous_detect():
             # index: 0-id 1-confidence 2-bbox
             # bbox: x,y,w,h
 
-            frame = retrieve_img()
-            image, detections = image_detection(frame, network, class_names, class_colors, THRESH)
+            frame = capture_img()
+            image, detections = run_image_detection(frame, network, class_names, class_colors, THRESH)
 
             # keep track of bigger image
             curr_height = 0
 
             for i in detections:
-                image_id = i[0]  # string
-                bbox = i[2]  # tuple
+                image_id = i[0]
+                bbox = i[2]
                 x_coordinate = int(bbox[0])
                 height = int(bbox[3])
 
+                # calculate distance
                 if height > 190:
                     distance = 15
                 elif height > 170:
@@ -246,6 +246,7 @@ def continuous_detect():
                     distance = 75
                     # 52 is height of 80 cm
 
+                # calculate position
                 if x_coordinate < 83:
                     position = "LEFT"
                 elif x_coordinate < 166:
@@ -265,7 +266,7 @@ def continuous_detect():
                     images[obstacle_id] = image
 
             if obstacle_id not in images:
-                ir_socket.send(img_rec_string.encode(FORMAT))
+                conn.send(img_rec_string.encode(FORMAT))
                 if to_stop:
                     counter -= 1
                 continue
@@ -273,24 +274,21 @@ def continuous_detect():
             if to_stop:
                 counter = 0
 
-            # draw text of image
+            # draw text of obstacle on image
             images[obstacle_id] = cv2.putText(images[obstacle_id],
                                               "Obstacle #" + obstacle_id + ": " + results[obstacle_id][0] + "(" + str(
                                                   mapping[results[obstacle_id][0]]) + ")", (10, 20),
                                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
 
-            cv2.imwrite("images" + str(imagecounter) + ".jpg", images[obstacle_id])
-            cv2.imwrite("test/images" + str(imagecounter) + ".jpg", images[obstacle_id])
-
-            imagecounter += 1
+            image_counter += 1
 
             message = img_rec_string.encode(FORMAT)
-            ir_socket.send(message)
+            conn.send(message)
 
     except KeyboardInterrupt:
-        print('End of image recognition.')
+        print("End of image recognition.")
 
-    # generate image mosaic
+    # generate stitch image and save it
     result_frame_list = list(images.values())
     show_all_images(result_frame_list)
 
@@ -300,11 +298,18 @@ def read():
     Reads message from server.
     """
     try:
-        msg = ir_socket.recv(1024).decode()
+        msg = conn.recv(1024).decode()
         return msg
     except socket.error as e:
         print("exception: ", e)
 
 
+def main():
+    """
+    Main method
+    """
+    continuous_detection()
+
+
 if __name__ == "__main__":
-    continuous_detect()
+    main()
